@@ -7,6 +7,7 @@ import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -20,11 +21,20 @@ import javax.servlet.http.HttpServletRequest;
 public class InvokeInfoAspect {
 
     /**
-     * 定义切入点：用到InvokeInfo注解的都是切入点，与包路径无关
+     * 定义切入点：通过@within拦截所有被该注解修饰的类
+     * @param invokeInfo
+     */
+    @Pointcut("@within(invokeInfo)")
+    public void typeService(InvokeInfo invokeInfo) {
+
+    }
+
+    /**
+     * 定义切入点：通过@annotation拦截所有被该注解修饰的方法
      * @param invokeInfo
      */
     @Pointcut("@annotation(invokeInfo)")
-    public void service(InvokeInfo invokeInfo) {
+    public void methodService(InvokeInfo invokeInfo) {
 
     }
 
@@ -35,13 +45,14 @@ public class InvokeInfoAspect {
      * @return
      * @throws Throwable
      */
-    @Around("service(invokeInfo)")
+    @Around("typeService(invokeInfo) || methodService(invokeInfo)")
     public Object doAround(ProceedingJoinPoint pjp, InvokeInfo invokeInfo) throws Throwable {
         long begin = System.currentTimeMillis();
 
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes.getRequest();
         Signature signature = pjp.getSignature();
+        if(invokeInfo == null) invokeInfo = ((MethodSignature) signature).getMethod().getDeclaringClass().getAnnotation(InvokeInfo.class);
 
         log.info("==================== 请求开始 ====================");
         log.info("请求链接：{}", request.getRequestURL().toString());
@@ -69,4 +80,5 @@ public class InvokeInfoAspect {
 
         return result;
     }
+
 }

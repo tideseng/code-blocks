@@ -8,7 +8,7 @@ import java.lang.annotation.*;
  * 注解类
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Documented
 public @interface InvokeInfo {
 
