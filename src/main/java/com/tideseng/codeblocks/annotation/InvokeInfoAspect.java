@@ -51,13 +51,21 @@ public class InvokeInfoAspect {
         log.info("方法描述：{}", invokeInfo.desc().equals("") ? invokeInfo.value() : invokeInfo.desc());
         log.info("方法入参：{}", JsonUtil.serialize(pjp.getArgs()));
 
-        Object result = pjp.proceed();
-        long end = System.currentTimeMillis();
+        Object result = null;
+        try{
+            result = pjp.proceed();
+        } catch(Exception e){
+            log.error("请求异常：{}", e.getMessage());
+            e.printStackTrace();
+            throw e;
+        } finally {
+            long end = System.currentTimeMillis();
 
-        log.info("请求耗时：{} ms", end - begin);
-        log.info("请求返回：{}", JsonUtil.serialize(result));
+            log.info("请求耗时：{} ms", end - begin);
+            log.info("请求返回：{}", JsonUtil.serialize(result));
 
-        log.info("==================== 请求结束 ====================");
+            log.info("==================== 请求结束 ====================");
+        }
 
         return result;
     }
